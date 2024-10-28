@@ -1,0 +1,85 @@
+#include <stdio.h>
+#include <string.h>
+
+void xorOperation(char *dividend, char *divisor, int len)
+{
+    for (int i = 0; i < len; i++)
+    {
+        dividend[i] = (dividend[i] == divisor[i]) ? '0' : '1';
+    }
+}
+
+void crc(char *input, char *generator, char *remainder)
+{
+    int msgLen = strlen(input);
+    int genLen = strlen(generator);
+    char temp[128];
+
+    strcpy(temp, input);
+    // Append zeros to the input message
+    for (int i = 0; i < genLen - 1; i++)
+    {
+        strcat(temp, "0");
+    }
+
+    for (int i = 0; i <= msgLen; i++)
+    {
+        if (temp[i] == '1')
+        {
+            xorOperation(&temp[i], generator, genLen);
+        }
+    }
+
+    // Copy the remainder to the output
+    strncpy(remainder, &temp[msgLen], genLen - 1);
+    remainder[genLen - 1] = '\0';
+}
+
+int main()
+{
+    char message[128], generator[128], received[128];
+    char remainder[128], temp[128];
+
+    printf("Enter the bit message: ");
+    scanf("%s", message);
+    printf("Enter the generator polynomial: ");
+    scanf("%s", generator);
+
+    crc(message, generator, remainder);
+
+    // Form the transmitted message
+    strcpy(temp, message);
+    strcat(temp, remainder);
+
+    printf("Transmitted message: %s\n", temp);
+
+    // Simulate receiving the message
+    printf("Enter the received message: ");
+    scanf("%s", received);
+
+    crc(received, generator, remainder);
+
+    printf("Remainder after checking: %s\n", remainder);
+
+    // Check if error is detected
+    int error = 0;
+    for (int i = 0; i < strlen(remainder); i++)
+    {
+        if (remainder[i] != '0')
+        {
+            error = 1;
+            break;
+        }
+    }
+
+    if (error)
+    {
+        printf("Error detected in the received message.\n");
+    }
+    else
+    {
+        printf("No error detected in the received message.\n");
+    }
+
+    return 0;
+}
